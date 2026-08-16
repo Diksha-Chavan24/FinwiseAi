@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # 1. React + Vite Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finwise-frontend
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080
+      - VITE_ML_ENGINE_URL=http://localhost:8000
+    depends_on:
+      - backend
+      - ml-engine
+    networks:
+      - finwise-network
+
+  # 2. Spring Boot Java Backend
+  backend:
+    build:
+      context: ./finwise-backend
+      dockerfile: Dockerfile
+    container_name: finwise-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/finwise_db
+      - ML_ENGINE_BASE_URL=http://ml-engine:8000
+    depends_on:
+      - mongodb
+    networks:
+      - finwise-network
+
+  # 3. Python FastAPI Financial Engine
+  ml-engine:
+    build:
+      context: ./finwise-ml-engine
+      dockerfile: Dockerfile
+    container_name: finwise-ml-engine
+    ports:
+      - "8000:8000"
+    networks:
+      - finwise-network
+
+  # 4. MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: finwise-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - finwise-network
+
+networks:
+  finwise-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
