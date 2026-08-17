@@ -1,63 +1,63 @@
 /**
- * FinWise AI - Stress Testing & Resilience Scoring Engine
+ * FinWise AI - Stress Testing & Resilience Scoring Engine (100% INR & Simple English)
  */
 
 import { calculateNetWorth, calculateCashFlow } from './financialCalculators';
 
 /**
- * Standard Macro Stress Scenarios
+ * Common Indian Household Stress Scenarios
  */
 export const STRESS_SCENARIOS = {
   RECESSION: {
     id: 'RECESSION',
-    name: 'Severe Market Downturn',
-    description: 'Equities drop -28%, real estate drops -10%, investment yields contract.',
-    equityDrop: 0.28,
-    realEstateDrop: 0.10,
+    name: 'Stock Market Fall (Nifty -25%)',
+    description: 'Mutual funds and stocks drop by 25%, real estate values stay flat.',
+    equityDrop: 0.25,
+    realEstateDrop: 0.05,
     incomeChange: 0,
     expenseSurge: 0.05,
     cashDrain: 0,
   },
   INFLATION_SPIKE: {
     id: 'INFLATION_SPIKE',
-    name: 'Stagflation Shock (8.5% Inflation)',
-    description: 'Living costs surge +18%, purchasing power erodes, salary growth stalls.',
-    equityDrop: 0.08,
+    name: 'High Inflation Shock (+15% Living Costs)',
+    description: 'Rent, groceries, school fees, and fuel prices increase by 15%.',
+    equityDrop: 0.05,
     realEstateDrop: 0,
     incomeChange: 0,
-    expenseSurge: 0.18,
+    expenseSurge: 0.15,
     cashDrain: 0,
   },
   JOB_LOSS_6MO: {
     id: 'JOB_LOSS_6MO',
     name: '6-Month Career Break / Job Loss',
-    description: 'Zero employment income for 6 consecutive months; living on cash reserves.',
+    description: 'Zero salary for 6 months; family lives on Bank FDs & liquid savings.',
     equityDrop: 0,
     realEstateDrop: 0,
     incomeChange: -1.0, // 0 income for 6 months
-    expenseSurge: -0.15, // Cut discretionary by 15%
+    expenseSurge: -0.10, // Cut shopping by 10%
     cashDrain: 0,
     durationMonths: 6,
   },
   MEDICAL_EMERGENCY: {
     id: 'MEDICAL_EMERGENCY',
-    name: 'Unplanned Critical Expense',
-    description: 'Sudden unexpected $15,000 out-of-pocket health or home catastrophe.',
+    name: 'Unplanned Medical Emergency (₹5 Lakhs)',
+    description: 'Sudden hospital bill or home repair of ₹5,00,000 paid from savings.',
     equityDrop: 0,
     realEstateDrop: 0,
     incomeChange: 0,
     expenseSurge: 0,
-    cashDrain: 15000,
+    cashDrain: 500000,
   },
   RATE_HIKE: {
     id: 'RATE_HIKE',
-    name: 'Central Bank Rate Spike (+3.5%)',
-    description: 'Variable loan rates spike, increasing monthly debt payments by +25%.',
-    equityDrop: 0.12,
-    realEstateDrop: 0.05,
+    name: 'Home Loan Interest Spike (+2.5%)',
+    description: 'RBI rate hike increases your monthly home loan EMI payments by 20%.',
+    equityDrop: 0.08,
+    realEstateDrop: 0.02,
     incomeChange: 0,
     expenseSurge: 0,
-    debtPaymentSurge: 0.25,
+    debtPaymentSurge: 0.20,
     cashDrain: 0,
   }
 };
@@ -77,14 +77,14 @@ export const runStressTest = (profile, scenarioKey = 'RECESSION', customOverride
   // Stressed Cash / Runway
   let stressedLiquidSavings = baseNetWorth.assets.liquidSavings - (scenario.cashDrain || 0);
 
-  // If job loss or income shock
+  // If job loss or career break
   if (scenario.durationMonths) {
     const monthlyBurn = (baseCashFlow.totalExpenses * (1 + (scenario.expenseSurge || 0)));
     const totalBurnInBreak = monthlyBurn * scenario.durationMonths;
     stressedLiquidSavings = stressedLiquidSavings - totalBurnInBreak;
   }
 
-  // Handle debt surge
+  // Handle loan EMI surge
   const stressedDebtPayment = baseCashFlow.monthlyDebtPayments * (1 + (scenario.debtPaymentSurge || 0));
   const stressedTotalExpenses = (baseCashFlow.fixedExpenses + baseCashFlow.discretionaryExpenses) * (1 + (scenario.expenseSurge || 0)) + stressedDebtPayment;
   const stressedMonthlyIncome = baseCashFlow.monthlyIncome * (1 + (scenario.incomeChange || 0));
@@ -94,9 +94,9 @@ export const runStressTest = (profile, scenarioKey = 'RECESSION', customOverride
   const stressedTotalAssets = Math.max(0, 
     Math.max(0, stressedLiquidSavings) + 
     stressedStocks + 
-    baseNetWorth.assets.retirementAccounts * (1 - (scenario.equityDrop || 0) * 0.7) + 
+    baseNetWorth.assets.retirementAccounts * (1 - (scenario.equityDrop || 0) * 0.4) + 
     stressedRealEstate + 
-    baseNetWorth.assets.cryptoAndOthers * (1 - (scenario.equityDrop || 0) * 1.5)
+    baseNetWorth.assets.cryptoAndOthers
   );
 
   const stressedNetWorth = stressedTotalAssets - baseNetWorth.totalLiabilities;
@@ -107,14 +107,13 @@ export const runStressTest = (profile, scenarioKey = 'RECESSION', customOverride
   const stressedRunway = stressedTotalExpenses > 0 ? Math.max(0, stressedLiquidSavings / stressedTotalExpenses) : 0;
 
   // Compute Resilience Score (0 - 100)
-  // Based on remaining runway, net worth preservation, and cash flow positivity
   let resilienceScore = 50;
   if (stressedRunway >= 6) resilienceScore += 25;
   else if (stressedRunway >= 3) resilienceScore += 15;
   else if (stressedRunway >= 1) resilienceScore += 5;
   else resilienceScore -= 15;
 
-  if (stressedSurplus > 500) resilienceScore += 15;
+  if (stressedSurplus > 20000) resilienceScore += 15;
   else if (stressedSurplus > 0) resilienceScore += 5;
   else resilienceScore -= 15;
 
@@ -144,6 +143,6 @@ export const runStressTest = (profile, scenarioKey = 'RECESSION', customOverride
       surplusDelta: Math.round(stressedSurplus - baseCashFlow.monthlySurplus),
     },
     resilienceScore,
-    resilienceRating: resilienceScore >= 80 ? 'Fortress (High Resilience)' : resilienceScore >= 60 ? 'Sturdy (Moderate Resilience)' : resilienceScore >= 40 ? 'Vulnerable' : 'High Fragility',
+    resilienceRating: resilienceScore >= 80 ? 'Very Safe & Resilient' : resilienceScore >= 60 ? 'Moderate (Stable)' : resilienceScore >= 40 ? 'Vulnerable' : 'High Risk',
   };
 };

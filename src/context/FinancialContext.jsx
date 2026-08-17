@@ -1,5 +1,5 @@
 /**
- * FinWise AI - Financial State & Deterministic Engine Context
+ * FinWise AI - Financial State & Deterministic Engine Context (100% INR)
  */
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
@@ -18,29 +18,27 @@ const FinancialContext = createContext();
 export const FinancialProvider = ({ children }) => {
   const { user, updateUserProfile } = useAuth();
 
-  // Currency selection: 'USD' ($) or 'INR' (₹)
-  const [currency, setCurrency] = useState(() => {
-    return localStorage.getItem('finwise_currency') || 'USD';
-  });
+  // Strict INR Currency
+  const currency = 'INR';
 
   // Profile data
   const [profile, setProfile] = useState(() => {
     return user || {
-      monthlyIncome: 10000,
-      fixedExpenses: 3500,
-      discretionaryExpenses: 1500,
-      monthlyDebtPayments: 500,
-      liquidSavings: 30000,
-      stocksAndMutualFunds: 60000,
-      retirementAccounts: 40000,
+      monthlyIncome: 120000,
+      fixedExpenses: 35000,
+      discretionaryExpenses: 20000,
+      monthlyDebtPayments: 8000,
+      liquidSavings: 350000,
+      stocksAndMutualFunds: 850000,
+      retirementAccounts: 420000,
       realEstate: 0,
-      cryptoAndOthers: 5000,
+      cryptoAndOthers: 150000,
       mortgage: 0,
-      studentLoans: 12000,
+      studentLoans: 180000,
       carLoans: 0,
       creditCardDebt: 0,
       otherDebts: 0,
-      riskScore: 75,
+      riskScore: 80,
       dependents: 0,
       hasHealthInsurance: true,
       hasLifeInsurance: true,
@@ -62,16 +60,8 @@ export const FinancialProvider = ({ children }) => {
     if (user) {
       setProfile(user);
       setGoals(user.goals || []);
-      if (user.currency) setCurrency(user.currency);
     }
   }, [user?.id]);
-
-  // Persist currency
-  const toggleCurrency = () => {
-    const next = currency === 'USD' ? 'INR' : 'USD';
-    setCurrency(next);
-    localStorage.setItem('finwise_currency', next);
-  };
 
   // Update profile handler
   const updateProfile = (newValues) => {
@@ -88,10 +78,10 @@ export const FinancialProvider = ({ children }) => {
       ...goal,
       id: 'goal-' + Date.now(),
       currentAmount: Number(goal.currentAmount || 0),
-      targetAmount: Number(goal.targetAmount || 10000),
+      targetAmount: Number(goal.targetAmount || 500000),
       targetYear: Number(goal.targetYear || new Date().getFullYear() + 5),
-      expectedReturn: Number(goal.expectedReturn || 0.09),
-      inflationRate: Number(goal.inflationRate || 0.05),
+      expectedReturn: Number(goal.expectedReturn || 0.10),
+      inflationRate: Number(goal.inflationRate || 0.06),
     };
     const updated = [...goals, newGoal];
     setGoals(updated);
@@ -151,8 +141,6 @@ export const FinancialProvider = ({ children }) => {
         activePlan,
         selectPlan,
         currency,
-        setCurrency,
-        toggleCurrency,
         netWorthData,
         cashFlowData,
         healthData,

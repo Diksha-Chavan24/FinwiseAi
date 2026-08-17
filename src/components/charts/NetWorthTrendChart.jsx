@@ -1,18 +1,17 @@
 import React from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useFinancial } from '../../context/FinancialContext';
-import { formatCurrency } from '../../utils/formatters';
+import { formatINR } from '../../utils/formatters';
 
-export default function NetWorthTrendChart({ years = 15, height = 280 }) {
-  const { netWorthData, cashFlowData, activePlan, plans, currency } = useFinancial();
+export default function NetWorthTrendChart({ years = 15 }) {
+  const { netWorthData, cashFlowData, activePlan, plans } = useFinancial();
   const currentPlan = plans.find(p => p.id === activePlan) || plans[1];
 
   const currentYear = new Date().getFullYear();
-  const initialNetWorth = Math.max(0, netWorthData?.netWorth || 25000);
-  const annualSavings = (cashFlowData?.monthlySurplus || 1200) * 12;
-  const annualReturn = currentPlan.expectedReturn || 0.09;
+  const initialNetWorth = Math.max(0, netWorthData?.netWorth || 200000);
+  const annualSavings = (cashFlowData?.monthlySurplus || 25000) * 12;
+  const annualReturn = currentPlan.expectedReturn || 0.10;
 
-  // Generate 15-year compound projection with current active plan
   const data = [];
   let compoundNetWorth = initialNetWorth;
 
@@ -34,13 +33,13 @@ export default function NetWorthTrendChart({ years = 15, height = 280 }) {
             <div className="flex items-center justify-between gap-4 text-xs">
               <span className="text-emerald-400 font-medium">Projected Net Worth:</span>
               <span className="font-mono-num font-bold text-white">
-                {formatCurrency(payload[0].value, currency)}
+                {formatINR(payload[0].value)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-4 text-[11px]">
-              <span className="text-slate-400">Principal Contributed:</span>
+              <span className="text-slate-400">Your Deposits (Principal):</span>
               <span className="font-mono-num text-slate-300">
-                {formatCurrency(payload[1]?.value || 0, currency)}
+                {formatINR(payload[1]?.value || 0)}
               </span>
             </div>
           </div>
@@ -53,7 +52,7 @@ export default function NetWorthTrendChart({ years = 15, height = 280 }) {
   return (
     <div className="w-full h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: -5, bottom: 0 }}>
           <defs>
             <linearGradient id="networthGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
@@ -79,7 +78,7 @@ export default function NetWorthTrendChart({ years = 15, height = 280 }) {
             axisLine={false} 
             fontSize={11}
             fontFamily="JetBrains Mono"
-            tickFormatter={(val) => formatCurrency(val, currency, true)}
+            tickFormatter={(val) => formatINR(val, true)}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area

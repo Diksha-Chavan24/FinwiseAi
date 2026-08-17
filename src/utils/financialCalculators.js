@@ -1,26 +1,28 @@
 /**
- * FinWise AI - Deterministic Financial Engine
- * Core calculations for Net Worth, Health Scoring, SIP, and Risk Detection
+ * FinWise AI - Deterministic Financial Engine (100% INR)
+ * Simple calculations for Net Worth, Health Score, Monthly Surplus, and Goals in INR (₹).
  */
 
+import { formatINR } from './formatters';
+
 /**
- * Calculate total assets, total liabilities, and net worth
+ * Calculate total assets, total debts, and net worth in INR
  */
 export const calculateNetWorth = (profile) => {
   const assets = {
-    liquidSavings: Number(profile?.liquidSavings || 0),
-    stocksAndMutualFunds: Number(profile?.stocksAndMutualFunds || 0),
-    retirementAccounts: Number(profile?.retirementAccounts || 0),
-    realEstate: Number(profile?.realEstate || 0),
-    cryptoAndOthers: Number(profile?.cryptoAndOthers || 0),
+    liquidSavings: Number(profile?.liquidSavings || 0),           // Bank Savings & Fixed Deposits
+    stocksAndMutualFunds: Number(profile?.stocksAndMutualFunds || 0), // Mutual Funds & Shares
+    retirementAccounts: Number(profile?.retirementAccounts || 0),   // EPF, PPF & NPS
+    realEstate: Number(profile?.realEstate || 0),                   // Real Estate Value
+    cryptoAndOthers: Number(profile?.cryptoAndOthers || 0),         // Gold & SGB
   };
 
   const liabilities = {
-    mortgage: Number(profile?.mortgage || 0),
-    studentLoans: Number(profile?.studentLoans || 0),
-    carLoans: Number(profile?.carLoans || 0),
-    creditCardDebt: Number(profile?.creditCardDebt || 0),
-    otherDebts: Number(profile?.otherDebts || 0),
+    mortgage: Number(profile?.mortgage || 0),                       // Home Loan
+    studentLoans: Number(profile?.studentLoans || 0),               // Education Loan
+    carLoans: Number(profile?.carLoans || 0),                       // Car Loan
+    creditCardDebt: Number(profile?.creditCardDebt || 0),           // Credit Card Dues
+    otherDebts: Number(profile?.otherDebts || 0),                   // Personal Loans
   };
 
   const totalAssets = Object.values(assets).reduce((a, b) => a + b, 0);
@@ -39,7 +41,7 @@ export const calculateNetWorth = (profile) => {
 };
 
 /**
- * Calculate monthly cash flow, surplus, and savings rate
+ * Calculate monthly cash flow, savings surplus, and EMI burden
  */
 export const calculateCashFlow = (profile) => {
   const monthlyIncome = Number(profile?.monthlyIncome || 0);
@@ -65,15 +67,14 @@ export const calculateCashFlow = (profile) => {
 };
 
 /**
- * Calculate 6-Pillar Financial Health Score (0 - 100)
+ * Calculate 6-Pillar Financial Health Score (0 - 100) in Simple English
  */
 export const calculateHealthScore = (profile, goals = []) => {
   const { totalAssets, totalLiabilities, netWorth, liquidAssets } = calculateNetWorth(profile);
   const { monthlyIncome, totalExpenses, monthlySurplus, savingsRate, dtiRatio } = calculateCashFlow(profile);
 
-  // 1. Emergency Fund Runway Score (0 - 20 pts)
-  // Target: 6 months of expenses
-  const monthlyBurn = totalExpenses > 0 ? totalExpenses : 2500;
+  // 1. Emergency Savings Runway (0 - 20 pts) -> Target: 6 months of expenses
+  const monthlyBurn = totalExpenses > 0 ? totalExpenses : 40000;
   const runwayMonths = liquidAssets / monthlyBurn;
   let emergencyScore = 0;
   if (runwayMonths >= 6) emergencyScore = 20;
@@ -81,40 +82,38 @@ export const calculateHealthScore = (profile, goals = []) => {
   else if (runwayMonths >= 1) emergencyScore = 7 + ((runwayMonths - 1) / 2) * 7;
   else emergencyScore = Math.min(6, runwayMonths * 6);
 
-  // 2. Debt Burden & DTI Score (0 - 20 pts)
-  // Ideal: DTI < 20%, Danger: DTI > 45%
+  // 2. Loan & EMI Burden (0 - 20 pts) -> Safe EMI is under 30% of salary
   let debtScore = 0;
   if (dtiRatio <= 0.15) debtScore = 20;
-  else if (dtiRatio <= 0.28) debtScore = 16 - ((dtiRatio - 0.15) / 0.13) * 4;
-  else if (dtiRatio <= 0.40) debtScore = 10 - ((dtiRatio - 0.28) / 0.12) * 6;
-  else debtScore = Math.max(2, 4 - ((dtiRatio - 0.40) / 0.2) * 4);
+  else if (dtiRatio <= 0.30) debtScore = 16 - ((dtiRatio - 0.15) / 0.15) * 4;
+  else if (dtiRatio <= 0.45) debtScore = 10 - ((dtiRatio - 0.30) / 0.15) * 6;
+  else debtScore = Math.max(2, 4 - ((dtiRatio - 0.45) / 0.2) * 4);
 
-  // Penalize heavily for revolving high-interest credit card debt
-  if (profile?.creditCardDebt > 2000) {
+  // Penalize revolving credit card dues
+  if (profile?.creditCardDebt > 25000) {
     debtScore = Math.max(2, debtScore - 6);
   }
 
-  // 3. Savings Rate Score (0 - 20 pts)
-  // Target: 30%+ savings rate = 20 pts, 20% = 14 pts, 10% = 8 pts
+  // 3. Monthly Savings Speed (0 - 20 pts) -> Saving 25%+ of salary
   let savingsScore = 0;
   if (savingsRate >= 0.35) savingsScore = 20;
   else if (savingsRate >= 0.20) savingsScore = 14 + ((savingsRate - 0.20) / 0.15) * 6;
   else if (savingsRate >= 0.10) savingsScore = 8 + ((savingsRate - 0.10) / 0.10) * 6;
   else savingsScore = Math.max(1, (savingsRate / 0.10) * 8);
 
-  // 4. Asset Diversification Score (0 - 15 pts)
+  // 4. Asset Diversification (0 - 15 pts)
   let diversificationScore = 0;
   if (totalAssets > 0) {
     const nonCashAssets = totalAssets - liquidAssets;
     const nonCashRatio = nonCashAssets / totalAssets;
-    if (nonCashRatio >= 0.4 && nonCashRatio <= 0.9) diversificationScore = 15;
-    else if (nonCashRatio > 0.9) diversificationScore = 10; // Low liquidity
+    if (nonCashRatio >= 0.4 && nonCashRatio <= 0.85) diversificationScore = 15;
+    else if (nonCashRatio > 0.85) diversificationScore = 10;
     else diversificationScore = Math.max(4, Math.round(nonCashRatio * 15));
   } else {
     diversificationScore = 2;
   }
 
-  // 5. Insurance & Risk Cushion (0 - 10 pts)
+  // 5. Insurance & Family Protection (0 - 10 pts)
   let insuranceScore = 0;
   const hasHealthInsurance = profile?.hasHealthInsurance ?? true;
   const hasLifeInsurance = profile?.hasLifeInsurance ?? (profile?.dependents > 0);
@@ -122,10 +121,10 @@ export const calculateHealthScore = (profile, goals = []) => {
   if (hasLifeInsurance) insuranceScore += 4;
   if (insuranceScore === 0) insuranceScore = 2;
 
-  // 6. Goal Readiness & Trajectory (0 - 15 pts)
+  // 6. Goal Progress (0 - 15 pts)
   let goalScore = 10;
   if (goals.length > 0) {
-    const fundedGoals = goals.filter(g => (g.currentAmount / (g.targetAmount || 1)) >= 0.3).length;
+    const fundedGoals = goals.filter(g => (g.currentAmount / (g.targetAmount || 1)) >= 0.25).length;
     goalScore = Math.min(15, Math.round((fundedGoals / goals.length) * 15) + 3);
   }
 
@@ -137,36 +136,33 @@ export const calculateHealthScore = (profile, goals = []) => {
     totalScore,
     runwayMonths: Number(runwayMonths.toFixed(1)),
     pillars: {
-      emergency: { score: Math.round(emergencyScore), max: 20, label: 'Emergency Cushion', status: runwayMonths >= 6 ? 'Optimal' : runwayMonths >= 3 ? 'Adequate' : 'Vulnerable' },
-      debt: { score: Math.round(debtScore), max: 20, label: 'Debt Burden & DTI', status: dtiRatio <= 0.25 ? 'Low Risk' : dtiRatio <= 0.40 ? 'Moderate' : 'High Burden' },
-      savings: { score: Math.round(savingsScore), max: 20, label: 'Savings Velocity', status: savingsRate >= 0.25 ? 'High' : savingsRate >= 0.15 ? 'Healthy' : 'Low' },
-      diversification: { score: Math.round(diversificationScore), max: 15, label: 'Asset Diversification', status: diversificationScore >= 12 ? 'Balanced' : 'Concentrated' },
-      protection: { score: Math.round(insuranceScore), max: 10, label: 'Risk Protection', status: insuranceScore >= 8 ? 'Secured' : 'Partial' },
-      goalReadiness: { score: Math.round(goalScore), max: 15, label: 'Goal Milestone Trajectory', status: goalScore >= 11 ? 'On Track' : 'Needs Funding' },
+      emergency: { score: Math.round(emergencyScore), max: 20, label: 'Emergency Savings (FD/Bank)', status: runwayMonths >= 6 ? 'Safe (6+ Mo)' : runwayMonths >= 3 ? 'Okay (3-6 Mo)' : 'Low (<3 Mo)' },
+      debt: { score: Math.round(debtScore), max: 20, label: 'Monthly Loan EMI Burden', status: dtiRatio <= 0.25 ? 'Low EMI' : dtiRatio <= 0.40 ? 'Moderate' : 'High EMI' },
+      savings: { score: Math.round(savingsScore), max: 20, label: 'Monthly Savings Speed', status: savingsRate >= 0.25 ? 'Fast' : savingsRate >= 0.15 ? 'Good' : 'Slow' },
+      diversification: { score: Math.round(diversificationScore), max: 15, label: 'Asset Balance (Funds/Gold/FD)', status: diversificationScore >= 12 ? 'Well Balanced' : 'Need More Balance' },
+      protection: { score: Math.round(insuranceScore), max: 10, label: 'Health & Life Insurance', status: insuranceScore >= 8 ? 'Protected' : 'Basic Cover' },
+      goalReadiness: { score: Math.round(goalScore), max: 15, label: 'Life Goals on Track', status: goalScore >= 11 ? 'On Schedule' : 'Needs Regular SIP' },
     }
   };
 };
 
 /**
- * Calculate required monthly SIP to achieve a goal with inflation adjustment
- * FV = Target * (1 + inflation)^years
- * SIP = (FV - PV*(1+r)^n) * r / ((1+r)^n - 1)
+ * Calculate required monthly SIP for a financial goal in INR
  */
-export const calculateGoalSIP = (targetAmount, currentAmount = 0, yearsRemaining = 5, expectedAnnualReturn = 0.10, annualInflation = 0.05) => {
+export const calculateGoalSIP = (targetAmount, currentAmount = 0, yearsRemaining = 5, expectedAnnualReturn = 0.10, annualInflation = 0.06) => {
   const years = Math.max(0.5, yearsRemaining);
   const months = years * 12;
   const monthlyRate = expectedAnnualReturn / 12;
   
-  // Future inflated value of target
+  // Future inflated cost of the goal
   const inflatedTarget = targetAmount * Math.pow(1 + annualInflation, years);
   
-  // Future value of existing savings for this goal
+  // Future value of existing investments for this goal
   const futureValueOfExisting = currentAmount * Math.pow(1 + expectedAnnualReturn, years);
   
   const gap = Math.max(0, inflatedTarget - futureValueOfExisting);
   if (gap === 0) return { requiredMonthlySIP: 0, inflatedTarget: Math.round(inflatedTarget), gap: 0 };
 
-  // Annuity formula for monthly payment
   const numerator = gap * monthlyRate;
   const denominator = Math.pow(1 + monthlyRate, months) - 1;
   const requiredMonthlySIP = denominator > 0 ? Math.round(numerator / denominator) : Math.round(gap / months);
@@ -180,7 +176,7 @@ export const calculateGoalSIP = (targetAmount, currentAmount = 0, yearsRemaining
 };
 
 /**
- * Detect Goal Conflicts and Cashflow Bottlenecks
+ * Detect Goal Conflicts and Monthly Cash Deficit in Simple English
  */
 export const detectGoalConflicts = (goals, monthlySurplus) => {
   const conflicts = [];
@@ -192,7 +188,7 @@ export const detectGoalConflicts = (goals, monthlySurplus) => {
       goal.currentAmount || 0,
       goal.targetYear - new Date().getFullYear(),
       goal.expectedReturn || 0.10,
-      goal.inflationRate || 0.05
+      goal.inflationRate || 0.06
     );
     totalRequiredMonthlySIP += sipData.requiredMonthlySIP;
     return {
@@ -206,28 +202,14 @@ export const detectGoalConflicts = (goals, monthlySurplus) => {
     conflicts.push({
       type: 'SURPLUS_DEFICIT',
       severity: deficit > monthlySurplus * 0.5 ? 'critical' : 'warning',
-      title: 'Cashflow Deficit for Goal Targets',
-      message: `Total required monthly goal investments ($${totalRequiredMonthlySIP.toLocaleString()}) exceed your monthly surplus ($${monthlySurplus.toLocaleString()}) by $${deficit.toLocaleString()}/month.`,
-      recommendation: 'Prioritize essential goals, extend target completion years by 1-2 years, or optimize discretionary spending.',
+      title: 'Goal SIPs Exceed Monthly Surplus',
+      message: `Total required monthly SIPs (${formatINR(totalRequiredMonthlySIP)}) for all goals exceed your monthly savings surplus (${formatINR(monthlySurplus)}) by ${formatINR(deficit)}/month.`,
+      recommendation: 'Increase the target timeline by 1-2 years or focus on high-priority goals first.',
       deficit,
       totalRequired: totalRequiredMonthlySIP,
       availableSurplus: monthlySurplus,
     });
   }
-
-  // Check for goals with near-term deadlines (< 2 years) with large gaps
-  analyzedGoals.forEach(goal => {
-    if (goal.yearsRemaining <= 2 && goal.gap > 20000 && goal.requiredMonthlySIP > monthlySurplus * 0.6) {
-      conflicts.push({
-        type: 'NEAR_TERM_SQUEEZE',
-        severity: 'warning',
-        title: `Tight Timeline on ${goal.name}`,
-        message: `Achieving "${goal.name}" in ${goal.yearsRemaining} years requires $${goal.requiredMonthlySIP.toLocaleString()}/mo, consuming over 60% of your available cashflow.`,
-        recommendation: 'Consider a phased milestone or reallocating existing liquid reserves to prevent monthly cash stress.',
-        goalId: goal.id,
-      });
-    }
-  });
 
   return {
     hasConflicts: conflicts.length > 0,
@@ -238,72 +220,58 @@ export const detectGoalConflicts = (goals, monthlySurplus) => {
 };
 
 /**
- * Detect Hidden Financial Risks & Vulnerabilities
+ * Detect Hidden Financial Risks in Simple English
  */
 export const detectHiddenRisks = (profile, healthData) => {
   const risks = [];
   const { assets, liabilities, totalAssets } = calculateNetWorth(profile);
   const { monthlyIncome, totalExpenses, savingsRate, dtiRatio } = calculateCashFlow(profile);
 
-  // 1. High Interest Credit Card Debt
-  if (liabilities.creditCardDebt > 1500) {
+  // 1. Credit Card Dues
+  if (liabilities.creditCardDebt > 15000) {
     risks.push({
       id: 'HIGH_INTEREST_DEBT',
-      category: 'Debt Danger',
+      category: 'Credit Card Alert',
       level: 'high',
-      title: 'High Interest Revolving Credit Balance',
-      description: `You have $${liabilities.creditCardDebt.toLocaleString()} in credit card debt. At typical ~22% APR, this drains substantial wealth every month without building equity.`,
-      action: 'Execute an Avalanche or Snowball debt payoff plan immediately.',
+      title: `High Credit Card Dues (${formatINR(liabilities.creditCardDebt)})`,
+      description: 'Credit cards charge high interest (~36-42% per year). Pay this off first before increasing investments.',
+      action: 'Pay off credit card dues immediately using monthly surplus.',
     });
   }
 
-  // 2. Critically Low Emergency Runway
+  // 2. Low Emergency Savings
   if (healthData.runwayMonths < 3) {
     risks.push({
       id: 'LOW_EMERGENCY_RUNWAY',
-      category: 'Liquidity Shock',
+      category: 'Safety Fund',
       level: healthData.runwayMonths < 1 ? 'critical' : 'high',
-      title: `Emergency Cushion covers only ${healthData.runwayMonths} months`,
-      description: `Your liquid cash of $${assets.liquidSavings.toLocaleString()} will only sustain your household for ${healthData.runwayMonths} months if primary income stops.`,
-      action: 'Direct first $500/mo of monthly surplus into high-yield emergency reserves.',
+      title: `Emergency Cash Covers Only ${healthData.runwayMonths} Months`,
+      description: `Your bank savings of ${formatINR(assets.liquidSavings)} will only cover ${healthData.runwayMonths} months of family living costs if income stops.`,
+      action: 'Build at least 3 to 6 months of living expenses in Bank FDs.',
     });
   }
 
-  // 3. High Debt-to-Income
+  // 3. High Loan EMI Burden
   if (dtiRatio > 0.40) {
     risks.push({
       id: 'ELEVATED_DTI',
-      category: 'Solvency Risk',
+      category: 'Loan Burden',
       level: 'medium',
-      title: `Debt Obligations consume ${(dtiRatio * 100).toFixed(0)}% of income`,
-      description: 'Lenders consider DTI above 36-40% high risk, restricting future financing flexibility.',
-      action: 'Refinance high-rate loans or delay non-essential major purchases.',
+      title: `Loan EMIs Take Up ${(dtiRatio * 100).toFixed(0)}% of Monthly Income`,
+      description: 'Having more than 40% of salary going to loan EMIs leaves very little room for monthly savings.',
+      action: 'Avoid taking new loans and prepay high-interest debt when possible.',
     });
   }
 
-  // 4. Asset Concentration Risk
-  if (totalAssets > 0) {
-    if (assets.realEstate / totalAssets > 0.75 && totalAssets > 100000) {
-      risks.push({
-        id: 'REAL_ESTATE_CONCENTRATION',
-        category: 'Asset Allocation',
-        level: 'medium',
-        title: 'Real Estate Illiquidity Over-concentration',
-        description: `${((assets.realEstate / totalAssets) * 100).toFixed(0)}% of your net worth is tied up in illiquid property, exposing you to localized market stagnation.`,
-        action: 'Direct incremental monthly savings toward diversified global liquid index funds.',
-      });
-    }
-  }
-
-  // 5. Low Savings Rate
-  if (savingsRate < 0.12 && monthlyIncome > 3000) {
+  // 4. Low Savings Rate
+  if (savingsRate < 0.15 && monthlyIncome > 40000) {
     risks.push({
       id: 'LOW_SAVINGS_RATE',
-      category: 'Wealth Velocity',
+      category: 'Savings Speed',
       level: 'medium',
-      title: `Low Savings Velocity (${(savingsRate * 100).toFixed(1)}%)`,
-      description: 'A savings rate under 15% significantly postpones retirement readiness and compound growth benefits.',
-      action: 'Audit recurring discretionary subscriptions and automate 20% direct deposit savings.',
+      title: `Monthly Savings Speed is Low (${(savingsRate * 100).toFixed(1)}%)`,
+      description: 'Saving less than 20% of your income makes it harder to achieve long-term goals like buying a home or retirement.',
+      action: 'Automate a monthly SIP on salary day to save at least 20%.',
     });
   }
 

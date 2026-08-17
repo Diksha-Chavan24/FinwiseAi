@@ -1,30 +1,28 @@
 /**
- * FinWise AI - Grounded AI Assistant & Financial Reasoning Service
- * Strictly adheres to: "GenAI must not invent financial numbers or calculate financial results."
- * Integrates with Google Gemini API when key is available, with built-in grounded contextual engine.
+ * FinWise AI - Grounded AI Assistant (100% INR & Simple English)
+ * Plain, simple English financial guidance strictly grounded in verified user facts. Zero hallucinations.
  */
 
-import { formatCurrency, formatPercent } from '../utils/formatters';
+import { formatINR, formatPercent } from '../utils/formatters';
 
 /**
  * Generate structured prompt context grounded in deterministic calculations
  */
-export const buildFinancialContextPrompt = (profile, healthData, goalsData, plans, activePlan, currency = 'USD') => {
+export const buildFinancialContextPrompt = (profile, healthData, goalsData, plans, activePlan) => {
   const activePlanObj = plans.find(p => p.id === activePlan) || plans[1] || plans[0];
 
   return `
-[GROUNDED FINANCIAL STATE]
-- Currency: ${currency}
-- Net Worth: ${formatCurrency(healthData?.netWorth || 0, currency)}
-- Total Assets: ${formatCurrency(healthData?.totalAssets || 0, currency)} (Liquid Cash: ${formatCurrency(profile?.liquidSavings || 0, currency)}, Equities: ${formatCurrency(profile?.stocksAndMutualFunds || 0, currency)}, Real Estate: ${formatCurrency(profile?.realEstate || 0, currency)})
-- Total Liabilities: ${formatCurrency(healthData?.totalLiabilities || 0, currency)} (Mortgage: ${formatCurrency(profile?.mortgage || 0, currency)}, High-interest debt: ${formatCurrency(profile?.creditCardDebt || 0, currency)})
-- Monthly Cashflow: Income ${formatCurrency(profile?.monthlyIncome || 0, currency)}, Total Expenses ${formatCurrency(healthData?.totalExpenses || 0, currency)}, Net Surplus ${formatCurrency(healthData?.monthlySurplus || 0, currency)}/mo
-- Savings Rate: ${formatPercent(healthData?.savingsRate || 0)}
-- Emergency Runway: ${healthData?.runwayMonths || 0} months of living expenses
-- 6-Pillar Health Score: ${healthData?.totalScore || 0}/100
-- Risk Profile: Score ${profile?.riskScore || 50}/100
-- Active Plan: ${activePlanObj?.name} (Expected return: ${formatPercent(activePlanObj?.expectedReturn || 0.09)}, Allocation: ${activePlanObj?.assetAllocation?.equity}% Eq / ${activePlanObj?.assetAllocation?.debt}% Debt)
-- Active Financial Goals: ${goalsData?.length ? goalsData.map(g => `${g.name} (Target: ${formatCurrency(g.targetAmount, currency)} by ${g.targetYear}, Req SIP: ${formatCurrency(g.requiredMonthlySIP || 0, currency)}/mo)`).join('; ') : 'None defined'}
+[VERIFIED USER FINANCIAL PROFILE IN INR]
+- Total Net Worth: ${formatINR(healthData?.netWorth || 0)}
+- Total Assets: ${formatINR(healthData?.totalAssets || 0)} (Bank Savings/FDs: ${formatINR(profile?.liquidSavings || 0)}, Mutual Funds/Stocks: ${formatINR(profile?.stocksAndMutualFunds || 0)}, EPF/PPF: ${formatINR(profile?.retirementAccounts || 0)}, Gold: ${formatINR(profile?.cryptoAndOthers || 0)}, Real Estate: ${formatINR(profile?.realEstate || 0)})
+- Total Loans/Debts: ${formatINR(healthData?.totalLiabilities || 0)} (Home Loan: ${formatINR(profile?.mortgage || 0)}, Education Loan: ${formatINR(profile?.studentLoans || 0)}, Credit Card Dues: ${formatINR(profile?.creditCardDebt || 0)})
+- Monthly Money Flow: Take-home Income ${formatINR(profile?.monthlyIncome || 0)}/mo, Total Expenses ${formatINR(healthData?.totalExpenses || 0)}/mo, Monthly Savings Surplus ${formatINR(healthData?.monthlySurplus || 0)}/mo
+- Monthly Savings Rate: ${formatPercent(healthData?.savingsRate || 0)}
+- Emergency Savings Buffer: ${healthData?.runwayMonths || 0} months of expenses in bank/FD
+- Financial Health Score: ${healthData?.totalScore || 0}/100
+- Risk Profile Score: ${profile?.riskScore || 50}/100
+- Active Chosen Plan: ${activePlanObj?.name} (Expected Return: ${formatPercent(activePlanObj?.expectedReturn || 0.10)}, Mix: ${activePlanObj?.assetAllocation?.equity}% Mutual Funds / ${activePlanObj?.assetAllocation?.debt}% FDs & Debt)
+- Active Goals: ${goalsData?.length ? goalsData.map(g => `${g.name} (Target: ${formatINR(g.targetAmount)} by ${g.targetYear}, Needed SIP: ${formatINR(g.requiredMonthlySIP || 0)}/mo)`).join('; ') : 'None added yet'}
 `;
 };
 
@@ -38,11 +36,9 @@ export const askAIAssistant = async ({
   goalsData,
   plans,
   activePlan,
-  conversationHistory = [],
-  currency = 'USD'
 }) => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('finwise_gemini_key');
-  const context = buildFinancialContextPrompt(profile, healthData, goalsData, plans, activePlan, currency);
+  const context = buildFinancialContextPrompt(profile, healthData, goalsData, plans, activePlan);
 
   if (apiKey) {
     try {
@@ -55,9 +51,12 @@ export const askAIAssistant = async ({
               role: 'user',
               parts: [
                 {
-                  text: `You are FinWise AI, an expert, objective fiduciary financial planner.
-Strict Rule: You must ONLY use the exact verified figures provided in the grounded financial context. DO NOT hallucinate, guess, or invent numbers.
-Structure your answers with clean markdown, bullet points, and specific action items.
+                  text: `You are FinWise AI, a friendly Indian personal finance advisor.
+Rules:
+1. Use simple, clear, everyday English. No difficult academic words.
+2. Use ONLY the exact numbers provided in the user context (in INR ₹, Lakhs, Crores).
+3. Do NOT make up any numbers.
+4. Give short, practical, bullet-point advice.
 
 ${context}
 
@@ -68,7 +67,7 @@ User question: ${question}`
           ],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 800,
+            maxOutputTokens: 600,
           }
         })
       });
@@ -79,100 +78,96 @@ User question: ${question}`
         if (reply) return reply;
       }
     } catch (e) {
-      console.warn('Gemini API call failed, falling back to deterministic reasoning engine:', e);
+      console.warn('Gemini call failed, using built-in reasoning engine:', e);
     }
   }
 
-  // Built-in Grounded NLP Reasoning Engine
-  return generateGroundedResponse(question, profile, healthData, goalsData, plans, activePlan, currency);
+  // Built-in Simple English Grounded Reasoning
+  return generateGroundedResponse(question, profile, healthData, goalsData, plans, activePlan);
 };
 
 /**
- * Deterministic Financial Reasoning Engine for instant intelligent responses
+ * Simple English Deterministic Reasoning Engine
  */
-function generateGroundedResponse(query, profile, healthData, goalsData, plans, activePlan, currency) {
+function generateGroundedResponse(query, profile, healthData, goalsData, plans, activePlan) {
   const q = query.toLowerCase();
   const surplus = healthData?.monthlySurplus || 0;
   const netWorth = healthData?.netWorth || 0;
   const runway = healthData?.runwayMonths || 0;
-  const healthScore = healthData?.totalScore || 70;
+  const healthScore = healthData?.totalScore || 75;
   const activePlanObj = plans.find(p => p.id === activePlan) || plans[1] || plans[0];
 
   // 1. Health Score Inquiry
-  if (q.includes('health score') || q.includes('score') || q.includes('why is my')) {
-    return `### 📊 Diagnostic Breakdown: Financial Health Score (${healthScore}/100)
+  if (q.includes('health score') || q.includes('score') || q.includes('why is my') || q.includes('how healthy')) {
+    return `### 📊 Your Financial Health Score: ${healthScore}/100
 
-Your overall score is determined by 6 deterministic pillars based on your audited data:
+Here is the simple breakdown of why your score is **${healthScore}/100**:
 
-- **Emergency Runway (${runway} months)**: ${runway >= 6 ? '✅ Excellent buffer exceeding the 6-month safety threshold.' : runway >= 3 ? '⚠️ Adequate, but vulnerable to extended career disruptions. Target: 6 months.' : '🚨 Critical risk. You only have ' + runway + ' months of liquidity.'}
-- **Savings Velocity (${formatPercent(healthData?.savingsRate || 0)})**: You save **${formatCurrency(surplus, currency)}** every month out of your **${formatCurrency(profile?.monthlyIncome || 0, currency)}** income.
-- **Debt-to-Income (${formatPercent(healthData?.dtiRatio || 0)})**: ${healthData?.dtiRatio <= 0.25 ? '✅ Low debt obligation burden.' : '⚠️ High debt payments taking up ' + formatPercent(healthData?.dtiRatio) + ' of your gross income.'}
-- **Credit Card Balance**: ${profile?.creditCardDebt > 0 ? `🚨 You have **${formatCurrency(profile.creditCardDebt, currency)}** in high-interest revolving credit. Paying this off will immediately boost your score by +6 points.` : '✅ Zero high-interest credit card debt detected.'}
+- **Emergency Savings (${runway} months)**: ${runway >= 6 ? '✅ Excellent! You have more than 6 months of living expenses in Bank/FD.' : runway >= 3 ? '⚠️ Okay, but try to reach 6 months of expenses in Bank FD for full safety.' : '🚨 Low emergency cash. You only have ' + runway + ' months of expenses saved.'}
+- **Monthly Savings (${formatPercent(healthData?.savingsRate || 0)})**: You save **${formatINR(surplus)}/month** after paying all living costs and loan EMIs.
+- **Loan Burden (${formatPercent(healthData?.dtiRatio || 0)})**: ${healthData?.dtiRatio <= 0.25 ? '✅ Your monthly loan EMIs are low and safe.' : '⚠️ Loan EMIs are taking up ' + formatPercent(healthData?.dtiRatio) + ' of your monthly salary.'}
+- **Credit Card Dues**: ${profile?.creditCardDebt > 0 ? `🚨 You have **${formatINR(profile.creditCardDebt)}** in credit card dues. Paying this off will immediately improve your score.` : '✅ You have zero credit card debt!'}
 
-**Recommended Action**: Direct the next 2 months of surplus (${formatCurrency(surplus * 2, currency)}) to strengthen your liquid reserves.`;
+**Top Advice**: Keep saving your monthly surplus of **${formatINR(surplus)}** consistently into your chosen goals.`;
   }
 
-  // 2. Plan Comparison Inquiry
-  if (q.includes('compare') || q.includes('which plan') || q.includes('plan') || q.includes('recommend')) {
-    return `### 📋 Strategy Comparison & Fiduciary Recommendation
+  // 2. Plan Comparison
+  if (q.includes('compare') || q.includes('which plan') || q.includes('plan') || q.includes('strategy')) {
+    return `### 📋 Comparing Your 4 Investment Plans
 
-Based on your verified **Risk Score (${profile?.riskScore || 50}/100)** and monthly surplus of **${formatCurrency(surplus, currency)}/mo**:
+Here is the simple comparison based on your monthly surplus of **${formatINR(surplus)}**:
 
-1. **${plans[1]?.name || 'Balanced Wealth Builder'}** (Active: ${activePlanObj.name === (plans[1]?.name || 'Balanced Wealth Builder') ? 'Yes' : 'No'}):
-   - **Allocation**: 55% Equity, 30% Debt, 10% Cash, 5% Gold
-   - **Expected Return**: 9.5% per annum
-   - **Fiduciary Rationale**: Ideal for your current timeline. It balances wealth compounding while safeguarding against market drawdowns greater than 15%.
+1. **${plans[1]?.name || 'Santulan Plan (Balanced)'}** (Active: ${activePlanObj.name === plans[1]?.name ? 'Yes' : 'No'}):
+   - **Investment Mix**: 55% Mutual Funds, 30% FDs/Debt, 10% Cash, 5% Gold
+   - **Expected Return**: 10.0% per year
+   - **Why choose this**: Best balanced option. Gives good wealth growth while protecting you during market dips.
 
-2. **${plans[2]?.name || 'Equity Maximizer'}**:
-   - **Allocation**: 80% Equity, 10% Debt, 5% Cash, 5% Gold
-   - **Expected Return**: 12.5% per annum
-   - **Trade-off**: Yields ~25% higher terminal net worth over 20 years, but experiences drawdowns of up to -28% in recessions.
+2. **${plans[2]?.name || 'Vridhi Plan (High Growth)'}**:
+   - **Investment Mix**: 80% Mutual Funds, 10% FDs, 5% Cash, 5% Gold
+   - **Expected Return**: 12.5% per year
+   - **Why choose this**: If you have 8+ years and want maximum wealth for buying a house or retirement.
 
-**Verdict**: If your job stability is high and you won't touch investments for 8+ years, switch to the **Equity Maximizer** to compound **${formatCurrency(surplus * 0.38, currency)}/mo**. Otherwise, stay with **${activePlanObj.name}**.`;
+**Recommendation**: Stay with **${activePlanObj.name}** for steady progress toward your goals.`;
   }
 
-  // 3. Goal Affordability / Feasibility
-  if (q.includes('afford') || q.includes('goal') || q.includes('retire') || q.includes('buy a home') || q.includes('house') || q.includes('car')) {
+  // 3. Goals and Affordability
+  if (q.includes('afford') || q.includes('goal') || q.includes('house') || q.includes('flat') || q.includes('retire') || q.includes('college')) {
     const totalGoalSIP = goalsData?.reduce((sum, g) => sum + (g.requiredMonthlySIP || 0), 0) || 0;
     const isFeasible = surplus >= totalGoalSIP;
 
-    return `### 🎯 Goal Feasibility & Cashflow Audit
+    return `### 🎯 Can You Afford Your Life Goals?
 
-- **Available Monthly Surplus**: ${formatCurrency(surplus, currency)}/mo
-- **Total Required Goal SIP**: ${formatCurrency(totalGoalSIP, currency)}/mo
-- **Cashflow Margin**: ${formatCurrency(surplus - totalGoalSIP, currency)}/mo
+- **Your Monthly Savings Surplus**: ${formatINR(surplus)}/month
+- **Total Required Monthly SIP for Goals**: ${formatINR(totalGoalSIP)}/month
+- **Extra Buffer Left Over**: ${formatINR(surplus - totalGoalSIP)}/month
 
 ${isFeasible 
-  ? `✅ **Your goals are mathematically achievable!** Your monthly surplus covers all active targets with a positive buffer of **${formatCurrency(surplus - totalGoalSIP, currency)}/mo** remaining for discretionary flexibility.`
-  : `⚠️ **Goal Conflict Detected**: Your targets require **${formatCurrency(totalGoalSIP, currency)}/mo**, which exceeds your surplus of **${formatCurrency(surplus, currency)}/mo** by **${formatCurrency(totalGoalSIP - surplus, currency)}/mo**.`}
+  ? `✅ **Yes, your goals are achievable!** Your monthly surplus of ${formatINR(surplus)} easily covers all your goal SIPs with **${formatINR(surplus - totalGoalSIP)}/month** extra to spare.`
+  : `⚠️ **Goal Deficit**: Your goals need **${formatINR(totalGoalSIP)}/month**, which is higher than your surplus of **${formatINR(surplus)}/month**. Consider extending the goal timeline by 1-2 years.`}
 
-**Next Steps**:
-1. Keep automating monthly deposits into dedicated goal accounts.
-2. Review target completion timelines if you wish to fund an additional milestone.`;
+**Next Step**: Set up auto-debit SIPs in mutual funds on the 5th of every month right after salary day.`;
   }
 
-  // 4. Vulnerabilities & Risk Audit
-  if (q.includes('risk') || q.includes('vulnerab') || q.includes('weakness') || q.includes('danger')) {
-    return `### 🛡️ Vulnerability & Shock Sensitivity Analysis
+  // 4. Risks and Vulnerabilities
+  if (q.includes('risk') || q.includes('danger') || q.includes('weakness') || q.includes('emergency')) {
+    return `### 🛡️ Safety & Risk Check for Your Money
 
-Running deterministic stress models against your **${formatCurrency(netWorth, currency)}** net worth reveals:
+- **Bank Emergency Fund**: You have **${formatINR(profile?.liquidSavings || 0)}** in liquid savings, which covers **${runway} months** of living costs.
+- **Stock Market Dip Impact**: If the stock market drops by 20%, your mutual fund portfolio would temporarily dip, but your emergency FDs and Gold are completely safe.
+- **Loan Safety**: Your monthly EMI is **${formatINR(profile?.monthlyDebtPayments || 0)}/mo**.
 
-1. **Liquidity Defense**: You currently hold **${formatCurrency(profile?.liquidSavings || 0, currency)}** in liquid savings, providing **${runway} months** of runway if your primary income halts.
-2. **Interest Rate Shock**: A +2.5% rate hike would impact your variable debt payments by approximately **${formatCurrency((profile?.monthlyDebtPayments || 0) * 0.2, currency)}/mo**.
-3. **Severe Market Downturn (-25% Equities)**: Your equities portfolio of **${formatCurrency(profile?.stocksAndMutualFunds || 0, currency)}** would experience a temporary paper drawdown of **${formatCurrency((profile?.stocksAndMutualFunds || 0) * 0.25, currency)}**, while your cash reserves remain unaffected.
-
-**Recommendation**: Maintain an unshakeable 6-month liquid cushion before expanding non-liquid investments.`;
+**Action Plan**: Ensure you have a ₹10-15 Lakh family health insurance policy and maintain 6 months of expenses in Bank FDs.`;
   }
 
-  // Default Grounded Overview
-  return `### 💡 FinWise AI Financial Analysis
+  // Default Simple Overview
+  return `### 💡 Quick Summary of Your Money
 
-Here is an executive summary grounded in your active profile:
+Here is where you stand right now:
 
-- **Net Worth**: **${formatCurrency(netWorth, currency)}** (Total Assets: ${formatCurrency(healthData?.totalAssets || 0, currency)}, Liabilities: ${formatCurrency(healthData?.totalLiabilities || 0, currency)})
-- **Monthly Savings Velocity**: **${formatCurrency(surplus, currency)}/mo** (${formatPercent(healthData?.savingsRate || 0)} savings rate)
-- **Active Plan**: **${activePlanObj.name}** (${activePlanObj.tagline})
-- **Financial Health**: Rated **${healthScore}/100** with **${runway} months** of emergency runway.
+- **Total Net Worth**: **${formatINR(netWorth)}** (Assets: ${formatINR(healthData?.totalAssets || 0)} | Loans: ${formatINR(healthData?.totalLiabilities || 0)})
+- **Monthly Savings Surplus**: **${formatINR(surplus)}/month** (${formatPercent(healthData?.savingsRate || 0)} savings speed)
+- **Active Investment Plan**: **${activePlanObj.name}**
+- **Health Score**: **${healthScore}/100** (${runway} months of emergency savings)
 
-*Feel free to ask me to compare your plans, evaluate a specific goal timeline, or stress-test a job-change scenario!*`;
+*Ask me anything about your goals, home buying plan, or comparing investment strategies!*`;
 }

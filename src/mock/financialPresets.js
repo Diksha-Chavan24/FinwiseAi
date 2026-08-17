@@ -1,64 +1,64 @@
 /**
- * FinWise AI - Financial Presets & Risk Questionnaire
+ * FinWise AI - Financial Presets & Risk Questionnaire (Simple English & Indian Context)
  */
 
 export const ASSET_COLORS = {
-  liquidSavings: '#10b981', // Emerald
-  stocksAndMutualFunds: '#06b6d4', // Cyan
-  retirementAccounts: '#6366f1', // Indigo
-  realEstate: '#f59e0b', // Amber
-  cryptoAndOthers: '#ec4899', // Pink
+  liquidSavings: '#10b981',       // Bank Savings & FDs (Emerald)
+  stocksAndMutualFunds: '#06b6d4', // Mutual Funds & Stocks (Cyan)
+  retirementAccounts: '#6366f1',   // EPF, PPF & NPS (Indigo)
+  realEstate: '#f59e0b',           // Real Estate Property (Amber)
+  cryptoAndOthers: '#ec4899',      // Gold & Sovereign Bonds (Pink)
 };
 
 export const RISK_QUESTIONS = [
   {
     id: 'q1',
-    question: 'What is your primary investment time horizon?',
+    question: 'How long do you plan to keep your money invested?',
     options: [
-      { label: 'Short-term (Under 2 years)', score: 5, note: 'Capital preservation is priority' },
-      { label: 'Medium-term (3 to 7 years)', score: 15, note: 'Balanced growth & stability' },
-      { label: 'Long-term (8 to 15 years)', score: 25, note: 'Can ride out market cycles' },
-      { label: 'Multi-decade (15+ years)', score: 30, note: 'Maximum compound time horizon' },
+      { label: 'Short time (Less than 2 years)', score: 5, note: 'Safety and fast access to money is most important' },
+      { label: 'Medium time (3 to 7 years)', score: 15, note: 'Good balance of safety and growth' },
+      { label: 'Long time (8 to 15 years)', score: 25, note: 'Can handle market ups and downs for higher returns' },
+      { label: 'Very long time (15+ years)', score: 30, note: 'Maximum time to grow wealth with compound interest' },
     ]
   },
   {
     id: 'q2',
-    question: 'If the stock market crashed -25% over the next 60 days, what would you do?',
+    question: 'If the stock market falls by 20% in 2 months, what would you do?',
     options: [
-      { label: 'Sell everything immediately to prevent further losses', score: 0, note: 'Extremely risk-averse' },
-      { label: 'Move a significant portion into cash / fixed deposits', score: 8, note: 'Low tolerance for volatility' },
-      { label: 'Hold steady and do nothing, waiting for recovery', score: 18, note: 'Disciplined long-term mindset' },
-      { label: 'Aggressively buy more shares at discounted valuations', score: 25, note: 'High opportunistic risk capacity' },
+      { label: 'Sell all my investments immediately to prevent loss', score: 0, note: 'Prefer complete safety' },
+      { label: 'Move some money to Bank Fixed Deposits', score: 8, note: 'Low tolerance for risk' },
+      { label: 'Stay calm and wait for the market to recover', score: 18, note: 'Patient and disciplined investor' },
+      { label: 'Invest more money at lower prices (Buy the Dip)', score: 25, note: 'High confidence and risk capacity' },
     ]
   },
   {
     id: 'q3',
-    question: 'How stable is your primary source of monthly income?',
+    question: 'How regular and secure is your monthly income?',
     options: [
-      { label: 'Variable / Commission-only / Unpredictable freelance', score: 5, note: 'Requires larger cash buffer' },
-      { label: 'Moderately stable with occasional bonus fluctuations', score: 12, note: 'Standard corporate variance' },
-      { label: 'Very stable salary (Tenured corporate or government role)', score: 20, note: 'High income reliability' },
-      { label: 'Multiple diversified passive & active cashflow streams', score: 25, note: 'Exceptional financial runway' },
+      { label: 'Unpredictable freelance or commission-based work', score: 5, note: 'Need a bigger emergency cash fund' },
+      { label: 'Regular job, but with variable incentives or bonuses', score: 12, note: 'Normal corporate job' },
+      { label: 'Very secure monthly salary (Established MNC or Govt)', score: 20, note: 'High job stability' },
+      { label: 'Multiple reliable income sources (Salary + Rent / Business)', score: 25, note: 'Strong continuous cashflow' },
     ]
   },
   {
     id: 'q4',
-    question: 'What is your primary investment objective?',
+    question: 'What is your main goal for investing your money?',
     options: [
-      { label: 'Protect my initial capital and never lose nominal value', score: 5, note: 'Preservation focus' },
-      { label: 'Generate predictable monthly dividends & interest', score: 12, note: 'Income focus' },
-      { label: 'Grow capital steadily ahead of inflation', score: 18, note: 'Balanced appreciation' },
-      { label: 'Maximize aggressive exponential capital growth', score: 25, note: 'Maximum equity compounder' },
+      { label: 'Keep my money 100% safe and never lose capital', score: 5, note: 'Safety first' },
+      { label: 'Earn regular monthly or quarterly interest/dividends', score: 12, note: 'Regular income' },
+      { label: 'Grow my savings faster than inflation', score: 18, note: 'Balanced wealth growth' },
+      { label: 'Build maximum wealth for big future milestones', score: 25, note: 'High growth focus' },
     ]
   },
   {
     id: 'q5',
-    question: 'How many months of basic living expenses do you currently hold in liquid cash?',
+    question: 'How many months of family living expenses do you have in bank savings / FDs?',
     options: [
-      { label: 'Less than 1 month', score: 0, note: 'Immediate vulnerability' },
-      { label: '1 to 3 months', score: 8, note: 'Minimum buffer' },
-      { label: '4 to 6 months', score: 16, note: 'Solid baseline reserve' },
-      { label: 'Over 6+ months', score: 20, note: 'High liquidity safety cushion' },
+      { label: 'Less than 1 month', score: 0, note: 'Emergency fund needed immediately' },
+      { label: '1 to 3 months', score: 8, note: 'Basic starting safety fund' },
+      { label: '4 to 6 months', score: 16, note: 'Healthy emergency safety net' },
+      { label: 'More than 6 months', score: 20, note: 'Excellent safety cushion' },
     ]
   }
 ];
@@ -66,11 +66,11 @@ export const RISK_QUESTIONS = [
 export const PLAN_STRATEGIES = [
   {
     id: 'plan-conservative',
-    name: 'Capital Shield Plan',
-    badge: 'Low Volatility',
+    name: 'Suraksha Plan (Safe & Steady)',
+    badge: 'Low Risk',
     badgeColor: 'amber',
-    tagline: 'Capital preservation, debt elimination, and low-volatility fixed income safety.',
-    expectedReturn: 0.065,
+    tagline: 'Protects your money with Bank Fixed Deposits, PPF, and Sovereign Gold Bonds.',
+    expectedReturn: 0.07,
     volatility: 0.05,
     assetAllocation: {
       equity: 25,
@@ -78,90 +78,90 @@ export const PLAN_STRATEGIES = [
       cash: 15,
       gold: 5,
     },
-    monthlySIPRatio: 0.20, // 20% of income
+    monthlySIPRatio: 0.20, // 20% of monthly income
     features: [
-      'Top-tier high yield treasury & debt funds',
-      'Accelerated high-interest debt paydown',
-      'Guaranteed liquidity preservation for emergencies',
-      'Zero sleepless nights during market drawdowns'
+      'High allocation to Bank FDs, PPF & Govt Bonds',
+      'Pay off high-interest loans first',
+      'Guaranteed emergency cash always ready',
+      'Zero stress during stock market drops'
     ],
-    pros: 'Ultra-low drawdowns, high capital security, predictable cash flows',
-    cons: 'Lower long-term inflation beating potential, slower FIRE attainment',
-    recommendedFor: 'Pre-retirees, low risk tolerance, or households with unstable monthly income',
+    pros: 'Maximum safety, steady interest income, no sudden losses',
+    cons: 'Slower long-term wealth growth compared to high inflation',
+    recommendedFor: 'People close to retirement or those who prefer complete peace of mind',
   },
   {
     id: 'plan-balanced',
-    name: 'Balanced Wealth Builder',
-    badge: 'Most Popular',
+    name: 'Santulan Plan (Balanced Growth)',
+    badge: 'Recommended',
     badgeColor: 'emerald',
-    tagline: 'Classic 60/40 institutional blend engineered for sustainable wealth accumulation.',
-    expectedReturn: 0.095,
-    volatility: 0.11,
+    tagline: 'Best blend of Mutual Funds (Nifty 50) for growth + Fixed Deposits for safety.',
+    expectedReturn: 0.10,
+    volatility: 0.10,
     assetAllocation: {
       equity: 55,
       debt: 30,
       cash: 10,
       gold: 5,
     },
-    monthlySIPRatio: 0.30, // 30% of income
+    monthlySIPRatio: 0.30, // 30% of monthly income
     features: [
-      'Broad-market total index funds (S&P 500 / Total World)',
-      'High-grade corporate and sovereign debt buffer',
-      'Automatic quarterly rebalancing mechanism',
-      'Optimal risk-adjusted Sharpe Ratio'
+      'Diversified Index Funds (Nifty 50 & Sensex)',
+      'High-safety Bank Fixed Deposits & Debt Funds',
+      'Balanced for buying a home, kids education & retirement',
+      'Automatic safety rebalancing every year'
     ],
-    pros: 'Exceptional risk-adjusted returns, smooth trajectory, proven 50-year track record',
-    cons: 'Moderate drawdowns during severe recessions (-15% to -20%)',
-    recommendedFor: 'Mid-career professionals, families saving for multiple concurrent goals',
+    pros: 'Great balance of growth and safety, proven long-term track record',
+    cons: 'Small short-term dips during market corrections (around 10-15%)',
+    recommendedFor: 'Salaried professionals and families planning multiple life goals',
   },
   {
     id: 'plan-aggressive',
-    name: 'Equity Maximizer',
-    badge: 'High Compounding',
+    name: 'Vridhi Plan (High Growth)',
+    badge: 'Maximum Wealth',
     badgeColor: 'cyan',
-    tagline: 'Heavy equity allocation tailored for long-term compound acceleration.',
+    tagline: 'Invests heavily in Equity Mutual Funds to build maximum long-term wealth.',
     expectedReturn: 0.125,
-    volatility: 0.17,
+    volatility: 0.15,
     assetAllocation: {
       equity: 80,
       debt: 10,
       cash: 5,
       gold: 5,
     },
-    monthlySIPRatio: 0.38, // 38% of income
+    monthlySIPRatio: 0.38, // 38% of monthly income
     features: [
-      'Large-cap & mid-cap growth equities weighting',
-      'Global emerging & developed market diversification',
-      'Minimal cash drag for maximum compounding power',
-      'Tax-optimized retirement vehicle prioritization'
+      'Large-cap and Mid-cap Equity Mutual Fund SIPs',
+      'Beats inflation comfortably over 7-15 year timelines',
+      'Low cash drag so more money is compounding',
+      'Tax-efficient long-term capital gains strategy'
     ],
-    pros: 'Highest long-term wealth ceiling, strong inflation outperformance',
-    cons: 'High short-term volatility, requires ironclad emotional discipline',
-    recommendedFor: 'Young professionals with 10+ year horizons and stable incomes',
+    pros: 'Highest wealth creation over 10-20 years',
+    cons: 'Higher volatility during market crashes',
+    recommendedFor: 'Young investors with 8+ years to invest and steady monthly income',
   },
   {
     id: 'plan-fire',
-    name: 'FIRE Acceleration Plan',
-    badge: 'Early Freedom',
+    name: 'Mukti Plan (Early Retirement / FIRE)',
+    badge: 'Fast Freedom',
     badgeColor: 'indigo',
-    tagline: 'Ultra-high savings rate strategy aiming for financial independence within 10-15 years.',
+    tagline: 'Save 50%+ of monthly income to achieve financial freedom and retire early.',
     expectedReturn: 0.115,
-    volatility: 0.15,
+    volatility: 0.14,
     assetAllocation: {
       equity: 75,
       debt: 15,
       cash: 5,
       gold: 5,
     },
-    monthlySIPRatio: 0.50, // 50%+ savings rate
+    monthlySIPRatio: 0.50, // 50%+ of monthly income
     features: [
-      'Aggressive cost-efficiency and 50%+ savings rate protocol',
-      'Dividend and index growth portfolio designed for 3.5% safe withdrawal rate',
-      'Strategic bridge accounts for pre-59.5 penalty-free withdrawals',
-      'Lean discretionary budget optimization'
+      'Aggressive 50%+ monthly savings rule',
+      'Builds a large dividend & growth corpus for regular passive income',
+      'Helps you retire 10 to 15 years before typical retirement age (60)',
+      'Smart budgeting to optimize monthly expenses'
     ],
-    pros: 'Retire 10-20 years ahead of standard retirement age',
-    cons: 'Requires austere current lifestyle and high savings discipline',
-    recommendedFor: 'High earners focused on early freedom and career autonomy',
+    pros: 'Achieve financial freedom and leave job early',
+    cons: 'Requires strict monthly discipline and keeping expenses low',
+    recommendedFor: 'People focused on early retirement, career freedom and flexibility',
   }
 ];

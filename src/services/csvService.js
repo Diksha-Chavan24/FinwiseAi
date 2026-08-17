@@ -1,6 +1,6 @@
 /**
- * FinWise AI - CSV Benchmark & Data Service
- * Loads 100 benchmark entries and performs peer percentile rankings
+ * FinWise AI - CSV Benchmark & Data Service (100% INR)
+ * Loads 100 Indian benchmark profiles and compares peer rankings.
  */
 
 import Papa from 'papaparse';
@@ -41,9 +41,7 @@ export const loadBenchmarkData = async () => {
 };
 
 /**
- * Calculate user percentile ranking against the 100 peer dataset
- * @param {number} userValue - User's net worth or savings rate or health score
- * @param {string} key - 'net_worth' | 'savings_rate' | 'health_score' | 'annual_income'
+ * Calculate user percentile ranking against the 100 Indian peer dataset
  */
 export const calculatePeerPercentile = async (userValue, key = 'net_worth') => {
   const dataset = await loadBenchmarkData();
@@ -64,15 +62,13 @@ export const calculatePeerPercentile = async (userValue, key = 'net_worth') => {
 };
 
 /**
- * Filter peers by demographic cohort (e.g. similar age bracket ±5 years)
+ * Filter peers by age bracket (e.g. ±5 years)
  */
-export const getCohortComparison = async (userAge = 30, userIncome = 100000) => {
+export const getCohortComparison = async (userAge = 30, userIncome = 1200000) => {
   const dataset = await loadBenchmarkData();
   if (!dataset || dataset.length === 0) return null;
 
   const ageCohort = dataset.filter(d => Math.abs(d.age - userAge) <= 6);
-  const incomeCohort = dataset.filter(d => Math.abs(d.annual_income - userIncome) <= 35000);
-
   const cohortToUse = ageCohort.length >= 8 ? ageCohort : dataset;
 
   const avgNetWorth = Math.round(cohortToUse.reduce((sum, d) => sum + (d.net_worth || 0), 0) / cohortToUse.length);
@@ -89,54 +85,24 @@ export const getCohortComparison = async (userAge = 30, userIncome = 100000) => 
 };
 
 /**
- * Export active financial profile as downloadable CSV
+ * Export active financial profile as downloadable CSV in INR
  */
 export const exportProfileToCSV = (profile) => {
   const data = [
-    {
-      Metric: 'Monthly Income',
-      Value: profile.monthlyIncome,
-    },
-    {
-      Metric: 'Fixed Expenses',
-      Value: profile.fixedExpenses,
-    },
-    {
-      Metric: 'Discretionary Expenses',
-      Value: profile.discretionaryExpenses,
-    },
-    {
-      Metric: 'Liquid Savings',
-      Value: profile.liquidSavings,
-    },
-    {
-      Metric: 'Stocks & Mutual Funds',
-      Value: profile.stocksAndMutualFunds,
-    },
-    {
-      Metric: 'Retirement Accounts',
-      Value: profile.retirementAccounts,
-    },
-    {
-      Metric: 'Real Estate Value',
-      Value: profile.realEstate,
-    },
-    {
-      Metric: 'Mortgage Outstanding',
-      Value: profile.mortgage,
-    },
-    {
-      Metric: 'Student Loans',
-      Value: profile.studentLoans,
-    },
-    {
-      Metric: 'Credit Card Debt',
-      Value: profile.creditCardDebt,
-    },
-    {
-      Metric: 'Risk Score (0-100)',
-      Value: profile.riskScore,
-    }
+    { Item: 'Monthly Income (₹)', Value: profile.monthlyIncome },
+    { Item: 'Fixed Living Needs (₹)', Value: profile.fixedExpenses },
+    { Item: 'Discretionary Lifestyle Spend (₹)', Value: profile.discretionaryExpenses },
+    { Item: 'Monthly Loan EMIs (₹)', Value: profile.monthlyDebtPayments },
+    { Item: 'Bank Savings & Fixed Deposits (₹)', Value: profile.liquidSavings },
+    { Item: 'Mutual Funds & Equity Stocks (₹)', Value: profile.stocksAndMutualFunds },
+    { Item: 'EPF, PPF & NPS (₹)', Value: profile.retirementAccounts },
+    { Item: 'Real Estate Property Value (₹)', Value: profile.realEstate },
+    { Item: 'Physical Gold & Sovereign Gold Bonds (₹)', Value: profile.cryptoAndOthers },
+    { Item: 'Home Loan Balance (₹)', Value: profile.mortgage },
+    { Item: 'Education Loan Balance (₹)', Value: profile.studentLoans },
+    { Item: 'Car Loan Balance (₹)', Value: profile.carLoans },
+    { Item: 'Credit Card Dues (₹)', Value: profile.creditCardDebt },
+    { Item: 'Risk Score (0-100)', Value: profile.riskScore }
   ];
 
   const csv = Papa.unparse(data);
@@ -144,7 +110,7 @@ export const exportProfileToCSV = (profile) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `FinWise_Profile_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `FinWise_India_Profile_${new Date().toISOString().split('T')[0]}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

@@ -1,18 +1,18 @@
 import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { useFinancial } from '../../context/FinancialContext';
-import { formatCurrency } from '../../utils/formatters';
+import { formatINR } from '../../utils/formatters';
 
 const ASSET_LABELS = {
-  liquidSavings: { label: 'Liquid Savings & Emergency', color: '#10b981' },
-  stocksAndMutualFunds: { label: 'Stocks & Mutual Funds', color: '#06b6d4' },
-  retirementAccounts: { label: 'Retirement Accounts (401k/IRA)', color: '#6366f1' },
-  realEstate: { label: 'Real Estate Equity', color: '#f59e0b' },
-  cryptoAndOthers: { label: 'Crypto & Alternatives', color: '#ec4899' },
+  liquidSavings: { label: 'Bank Savings & FDs', color: '#10b981' },
+  stocksAndMutualFunds: { label: 'Mutual Funds & Stocks', color: '#06b6d4' },
+  retirementAccounts: { label: 'EPF, PPF & NPS', color: '#6366f1' },
+  realEstate: { label: 'Real Estate Property', color: '#f59e0b' },
+  cryptoAndOthers: { label: 'Gold & SGB Bonds', color: '#ec4899' },
 };
 
-export default function AssetPieChart({ height = 260 }) {
-  const { netWorthData, currency } = useFinancial();
+export default function AssetPieChart() {
+  const { netWorthData } = useFinancial();
   const assets = netWorthData?.assets || {};
 
   const chartData = Object.entries(assets)
@@ -35,7 +35,7 @@ export default function AssetPieChart({ height = 260 }) {
           <p className="text-xs font-semibold text-white">{data.name}</p>
           <div className="flex items-center gap-2 mt-1">
             <span className="font-mono-num font-bold text-emerald-400">
-              {formatCurrency(data.value, currency)}
+              {formatINR(data.value)}
             </span>
             <span className="text-xs text-slate-400 font-mono">({percentage}%)</span>
           </div>
@@ -48,7 +48,7 @@ export default function AssetPieChart({ height = 260 }) {
   if (chartData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-slate-500 text-xs">
-        No asset data configured yet.
+        No assets added yet.
       </div>
     );
   }
@@ -75,11 +75,10 @@ export default function AssetPieChart({ height = 260 }) {
           </PieChart>
         </ResponsiveContainer>
         
-        {/* Center label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">Total Assets</span>
           <span className="text-sm font-bold font-mono-num text-white">
-            {formatCurrency(totalAssets, currency, true)}
+            {formatINR(totalAssets, true)}
           </span>
         </div>
       </div>
@@ -92,10 +91,10 @@ export default function AssetPieChart({ height = 260 }) {
             <div key={item.key} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-800/40 transition-colors">
               <div className="flex items-center gap-2 truncate">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                <span className="text-slate-300 truncate max-w-[130px]">{item.name}</span>
+                <span className="text-slate-300 truncate max-w-[140px]">{item.name}</span>
               </div>
               <div className="flex items-center gap-1.5 font-mono">
-                <span className="font-semibold text-white">{formatCurrency(item.value, currency, true)}</span>
+                <span className="font-semibold text-white">{formatINR(item.value, true)}</span>
                 <span className="text-[11px] text-slate-500 w-10 text-right">{percent}%</span>
               </div>
             </div>
